@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "layui-src": "^2.1.5"
+  },
   "devDependencies": {
     "autoprefixer": "^7.1.5",
     "clean-webpack-plugin": "^0.1.17",

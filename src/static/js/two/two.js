@@ -1,4 +1,7 @@
 /**
  * Created by lsq on 2017/10/23.
  */
-console.log('two');
+require('../../fonts/iconfont.css')
+$(document).ready(function () {
+    console.log('two');
+});

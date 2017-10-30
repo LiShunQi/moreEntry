@@ -9,7 +9,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin'); //html模板生成器
 var CleanPlugin = require('clean-webpack-plugin'); // 文件夹清除工具
 var CopyWebpackPlugin = require('copy-webpack-plugin'); // 文件拷贝
 
-
+//取npm run 后的值
 var currentTarget = process.env.npm_lifecycle_event;
 //基本路径
 const PATHS = {
@@ -23,13 +23,20 @@ var file_js = getEntry('./src/static/js/**/*.js','./src/static/js/');
 var pages = Object.keys(file_html);
 
 var resolve = {
+    enforceExtension: false,
     alias: {
         jquery:  path.resolve(PATHS.libPath,  'jquery/jquery-1.12.4.js'),
-        layui:  path.resolve(PATHS.libPath,  'layui/layui.js')
+        modules: PATHS.node_modulesPath
+        // layui:  path.resolve(PATHS.libPath,  'layui-vender.js')
+        // layui:  path.resolve(PATHS.node_modulesPath,  'layui-src')
     },
-    extensions: ['.html', '.js', '.less', '.css']
+    extensions: ['.html', '.js', '.less', '.css'],
+    modules: ["node_modules"]
 };
-var entry = Object.assign(file_js,{});
+//入口
+var entry = Object.assign(file_js,{
+    index: ['./src/index.js']
+});
 var output = {
     path: path.join(__dirname, 'build'),//（输出目录）
     publicPath: '',	//模板、样式、脚本、图片等资源对应的server上的路径
@@ -45,7 +52,7 @@ var loaders = [
         loader: 'file-loader?name=/fonts/[name].[ext]'
     },
     {
-        test: /\.(png|jpg|gif|svg)$/,
+        test: /\.(png|jpg|gif)$/,
         loader: 'url-loader',
         query: {
             limit: 30720, //30kb 图片转base64。设置图片大小，小于此数则转换。
@@ -59,15 +66,23 @@ var plugins = [
     new webpack.ProvidePlugin({ //全局配置加载
         $: "jquery",
         jQuery: "jquery",
-        "window.jQuery": "jquery"
+        "window.jQuery": "jquery",
     }),
     new CleanPlugin(['build']),// 清空dist文件夹
     new webpack.optimize.CommonsChunkPlugin({
         name: 'common', // 将公共模块提取，生成名为`vendors`的chunk
         minChunks: 3 // 提取至少3个模块共有的部分
     }),
-    new ExtractTextPlugin( "css/[name].[hash:6].css"), //提取CSS行内样式，转化为link引入
-
+    new ExtractTextPlugin( "static/css/[name]-[hash:6].css"), //提取CSS行内样式，转化为link引入
+    new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: __dirname + '/src/index.html',
+        inject: 'body',
+        // 需要依赖的模块
+        chunks: ['common', 'index'],
+        // 根据依赖自动排序
+        chunksSortMode: 'dependency'
+    }),
     // new CopyWebpackPlugin([
     //     {from: './src/static/images', to: './static/images'} //拷贝图片
     // ]),
@@ -107,13 +122,13 @@ var devServer = {
 };
 //生成HTML模板
 pages.forEach(function(pathname) {
-    var fileName = pathname;
+    var itemName  = pathname.split('\\'); //根据系统路径来取文件名,window下的做法//,其它系统另测
     var conf = {
-        filename: 'views/' + pathname + '.html', //生成的html存放路径，相对于path
+        filename: itemName[1] + '.html', //生成的html存放路径，相对于path
         template: path.resolve(__dirname, './src/views/' + pathname + '.html'), //html模板路径
         inject: true, //允许插件修改哪些内容，包括head与body
         hash: false, //是否添加hash值
-        chunks: ['common', fileName],
+        chunks: ['common', pathname],
         minify: { //压缩HTML文件
             removeComments: true,//移除HTML中的注释
             collapseWhitespace: false //删除空白符与换行符
@@ -125,10 +140,10 @@ pages.forEach(function(pathname) {
 var config = {
     entry: entry,
     output: output,
-    resolve: resolve,
     module: {
         rules: loaders
     },
+    resolve: resolve,
     plugins: plugins,
     //使用webpack-dev-server服务器，提高开发效率
     devServer: devServer
@@ -150,7 +165,7 @@ function getEntry(globPath, pathDir) {
         pathname = path.normalize(path.join(dirname,  basename));//完整路径，不包含扩展名
         pathDir = path.normalize(pathDir);
         if(pathname.startsWith(pathDir)){
-            pathname = pathname.substring(pathDir.length)
+            pathname = path.normalize(pathname.substring(pathDir.length))
         }
         entries[pathname] = ['./' + entry];
     }
