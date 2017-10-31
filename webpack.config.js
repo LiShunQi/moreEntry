@@ -8,6 +8,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');//将你的行内
 var HtmlWebpackPlugin = require('html-webpack-plugin'); //html模板生成器
 var CleanPlugin = require('clean-webpack-plugin'); // 文件夹清除工具
 var CopyWebpackPlugin = require('copy-webpack-plugin'); // 文件拷贝
+var OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');//压缩css
 
 //取npm run 后的值
 var currentTarget = process.env.npm_lifecycle_event;
@@ -98,10 +99,26 @@ var plugins = [
 if(currentTarget == "build"){
    plugins.push(
        new webpack.optimize.UglifyJsPlugin({ // js压缩
+           mangle: {
+               except: ['$super', '$', 'exports', 'require']
+           },
            compress: {
                warnings: false
+           },
+           output: {
+               comments: false
            }
         })
+   );
+   plugins.push(
+       new OptimizeCssAssetsPlugin({
+           cssProcessorOptions: {
+               discardComments: {
+                   removeAll: true
+               }
+           },
+           canPrint: false
+       })
    )
 }
 //浏览器打开，代理
@@ -111,7 +128,7 @@ var devServer = {
     stats: { colors: true },
     host:'0.0.0.0',
     port: 3000,
-    contentBase: '/'
+    contentBase: './build'
     // proxy: {
     //     '/taskManage': {
     //         target: 'http://192.168.1.105:8080',
