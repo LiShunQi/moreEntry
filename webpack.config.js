@@ -15,7 +15,7 @@ var currentTarget = process.env.npm_lifecycle_event;
 const PATHS = {
     node_modulesPath: path.resolve('./node_modules'),
     libPath: path.resolve('src/libs/'),
-    staticPath: path.resolve('static/')
+    staticPath: path.resolve('src/static/')
 };
 //获取 html 多模块入口文件
 var file_html = getEntry('./src/views/**/*.html','./src/views/');
@@ -26,9 +26,9 @@ var resolve = {
     enforceExtension: false,
     alias: {
         jquery:  path.resolve(PATHS.libPath,  'jquery/jquery-1.12.4.js'),
-        modules: PATHS.node_modulesPath
-        // layui:  path.resolve(PATHS.libPath,  'layui-vender.js')
-        // layui:  path.resolve(PATHS.node_modulesPath,  'layui-src')
+        modules: PATHS.node_modulesPath,
+        static: PATHS.staticPath, //静态资源路径
+        libs: PATHS.libPath, //第三方库文件路径
     },
     extensions: ['.html', '.js', '.less', '.css'],
     modules: ["node_modules"]
@@ -39,7 +39,7 @@ var entry = Object.assign(file_js,{
 });
 var output = {
     path: path.join(__dirname, 'build'),//（输出目录）
-    publicPath: '',	//模板、样式、脚本、图片等资源对应的server上的路径
+    publicPath: '/',	//模板、样式、脚本、图片等资源对应的server上的路径
     filename: 'static/js/[name]-[hash:6].js' //文件名称
 };
 var loaders = [
@@ -49,7 +49,7 @@ var loaders = [
     },
     {
         test: /\.(woff|woff2|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file-loader?name=/fonts/[name].[ext]'
+        loader: 'file-loader?name=static/fonts/[name].[ext]'
     },
     {
         test: /\.(png|jpg|gif)$/,
@@ -66,7 +66,7 @@ var plugins = [
     new webpack.ProvidePlugin({ //全局配置加载
         $: "jquery",
         jQuery: "jquery",
-        "window.jQuery": "jquery",
+        "window.jQuery": "jquery"
     }),
     new CleanPlugin(['build']),// 清空dist文件夹
     new webpack.optimize.CommonsChunkPlugin({
@@ -111,7 +111,7 @@ var devServer = {
     stats: { colors: true },
     host:'0.0.0.0',
     port: 3000,
-    contentBase: 'build'
+    contentBase: '/'
     // proxy: {
     //     '/taskManage': {
     //         target: 'http://192.168.1.105:8080',
@@ -124,7 +124,7 @@ var devServer = {
 pages.forEach(function(pathname) {
     var itemName  = pathname.split('\\'); //根据系统路径来取文件名,window下的做法//,其它系统另测
     var conf = {
-        filename: itemName[1] + '.html', //生成的html存放路径，相对于path
+        filename: 'views/' + pathname + '.html', //生成的html存放路径，相对于path
         template: path.resolve(__dirname, './src/views/' + pathname + '.html'), //html模板路径
         inject: true, //允许插件修改哪些内容，包括head与body
         hash: false, //是否添加hash值
