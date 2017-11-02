@@ -92,8 +92,8 @@ var plugins = [
         to: './libs/layui'
     }]),
     // new CopyWebpackPlugin([{
-    //     from: './src/fonts/font' ,
-    //     to: './css/fonts'
+    //     from: './src/static/font' ,
+    //     to: './static/font'
     // }])
 ];
 if(currentTarget == "build"){
@@ -124,7 +124,7 @@ if(currentTarget == "build"){
 //浏览器打开，代理
 var devServer = {
     historyApiFallback: true,
-    inline: true,
+    inline: false,
     stats: { colors: true },
     host:'0.0.0.0',
     port: 3000,
