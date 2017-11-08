@@ -9,6 +9,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin'); //html模板生成器
 var CleanPlugin = require('clean-webpack-plugin'); // 文件夹清除工具
 var CopyWebpackPlugin = require('copy-webpack-plugin'); // 文件拷贝
 var OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');//压缩css
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin');//压缩js
 
 //取npm run 后的值
 var currentTarget = process.env.npm_lifecycle_event;
@@ -84,42 +85,33 @@ var plugins = [
         // 根据依赖自动排序
         chunksSortMode: 'dependency'
     }),
-    // new CopyWebpackPlugin([
-    //     {from: './src/static/images', to: './static/images'} //拷贝图片
-    // ]),
     new CopyWebpackPlugin([{
         from: './src/libs/layui',
         to: './libs/layui'
     }]),
-    // new CopyWebpackPlugin([{
-    //     from: './src/static/font' ,
-    //     to: './static/font'
-    // }])
+    new CopyWebpackPlugin([{
+        from: './src/libs/shim',
+        to: './libs/shim'
+    }]),
+    new UglifyJSPlugin({ //js压缩
+        uglifyOptions:{
+            ie8:true,
+            ecma:5,
+            output: {
+                comments: false
+            },
+            warnings: false
+        }
+    })
 ];
-if(currentTarget == "build"){
-   plugins.push(
-       new webpack.optimize.UglifyJsPlugin({ // js压缩
-           mangle: {
-               except: ['$super', '$', 'exports', 'require']
-           },
-           compress: {
-               warnings: false
-           },
-           output: {
-               comments: false
-           }
-        })
-   );
-   plugins.push(
-       new OptimizeCssAssetsPlugin({
-           cssProcessorOptions: {
-               discardComments: {
-                   removeAll: true
-               }
-           },
-           canPrint: false
-       })
-   )
+if(currentTarget != "build"){
+   // plugins.push(
+   //     new OptimizeCssAssetsPlugin({ //压缩css
+   //         cssProcessor: require('cssnano'),
+   //         cssProcessorOptions: { discardComments: {removeAll: true } },
+   //         canPrint: true
+   //     })
+   // );
 }
 //浏览器打开，代理
 var devServer = {
