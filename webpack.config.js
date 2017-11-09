@@ -92,26 +92,29 @@ var plugins = [
     new CopyWebpackPlugin([{
         from: './src/libs/shim',
         to: './libs/shim'
-    }]),
-    new UglifyJSPlugin({ //js压缩
-        uglifyOptions:{
-            ie8:true,
-            ecma:5,
-            output: {
-                comments: false
-            },
-            warnings: false
-        }
-    })
+    }])
 ];
-if(currentTarget != "build"){
-   // plugins.push(
-   //     new OptimizeCssAssetsPlugin({ //压缩css
-   //         cssProcessor: require('cssnano'),
-   //         cssProcessorOptions: { discardComments: {removeAll: true } },
-   //         canPrint: true
-   //     })
-   // );
+if(currentTarget == "build"){
+   plugins.push(
+       new UglifyJSPlugin({ //js压缩
+           uglifyOptions:{
+               ie8:true,
+               ecma:5,
+               output: {
+                   comments: false
+               },
+               warnings: false
+           }
+       }),
+       new OptimizeCssAssetsPlugin({ //压缩css
+           cssProcessorOptions: {
+               discardComments: {
+                   removeAll: true
+               }
+           },
+           canPrint: false
+       })
+   );
 }
 //浏览器打开，代理
 var devServer = {
