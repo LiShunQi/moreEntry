@@ -119,7 +119,7 @@ if(currentTarget == "build"){
 //浏览器打开，代理
 var devServer = {
     historyApiFallback: true,
-    inline: false,
+    inline: true,
     stats: { colors: true },
     host:'0.0.0.0',
     port: 3000,
